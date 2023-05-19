@@ -1,22 +1,25 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.18;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "./XRC1155.sol";
 
-contract Game is ERC721, ERC721URIStorage {
+contract Game is XRC1155 {
+    // using Strings for uint256;
+
     address public owner;
-    uint public currentLevel;
-    uint public totalLevels;
-    uint totalTokens;
+    uint256 public currentLevel;
+    uint256 public totalLevels;
+    uint256 public totalTokens;
+    string private baseURI;
 
     mapping(address => bool) public isRegistered;
-    mapping(address => uint) public levelRewards;
+    mapping(address => uint256) public levelRewards;
+    mapping(uint256 => string) private _tokenURIs;
 
-    constructor() ERC721("GameNFT", "GNFT") {
+    constructor(string memory _baseURI) XRC1155() {
         owner = msg.sender;
         currentLevel = 1;
-        totalLevels = 5; // Replace with the desired total number of levels
+        totalLevels = 5;
         totalTokens = 0;
     }
 
@@ -36,17 +39,6 @@ contract Game is ERC721, ERC721URIStorage {
         _;
     }
 
-    function _setTokenURI(
-        uint256 tokenId,
-        string memory tokenURI
-    ) internal virtual override {
-        require(
-            _exists(tokenId),
-            "ERC721URIStorage: URI set of nonexistent token"
-        );
-        _tokenURIs[tokenId] = tokenURI;
-    }
-
     function register(string memory playerName) external {
         require(!isRegistered[msg.sender], "You are already registered.");
         require(bytes(playerName).length > 0, "Player name cannot be empty.");
@@ -55,19 +47,23 @@ contract Game is ERC721, ERC721URIStorage {
         levelRewards[msg.sender] = 0;
 
         // Mint an NFT for the registered player
-        uint tokenId = totalTokens + 1;
-        _mint(msg.sender, tokenId);
-        _setTokenURI(tokenId, playerName);
-
+        uint256 tokenId = totalTokens + 1;
+        balances[tokenId][msg.sender] = 1;
         totalTokens++;
+
+        // Set the token URI
+        _setTokenURI(tokenId, playerName);
     }
 
+    function balanceOf(address account, uint256 tokenId) public override view returns (uint256) {
+        return balances[tokenId][account];
+    }
 
-    function playGame(uint answer) external onlyRegistered {
+    function playGame(uint256 answer) external onlyRegistered {
         require(answer == currentLevel, "Incorrect answer. Try again.");
 
         // Calculate reward based on the level
-        uint reward = calculateReward(currentLevel);
+        uint256 reward = calculateReward(currentLevel);
 
         // Update the player's reward for the current level
         levelRewards[msg.sender] = reward;
@@ -78,7 +74,7 @@ contract Game is ERC721, ERC721URIStorage {
         }
     }
 
-    function calculateReward(uint level) internal pure returns (uint) {
+    function calculateReward(uint256 level) internal pure returns (uint256) {
         // Define the reward logic based on the level
         if (level == 1) {
             return 10; // Replace with the desired reward for level 1
@@ -99,11 +95,33 @@ contract Game is ERC721, ERC721URIStorage {
         // Transfer the player's reward to their wallet
         // Replace this with the specific implementation for transferring the reward
         // using the player's registered wallet address
-        uint rewardAmount = levelRewards[msg.sender];
+        uint256 rewardAmount = levelRewards[msg.sender];
         levelRewards[msg.sender] = 0;
     }
 
-    function setTotalLevels(uint levels) external onlyOwner {
+    function setTotalLevels(uint256 levels) external onlyOwner {
+        require(levels > totalLevels, "The total levels cannot be decreased.");
         totalLevels = levels;
+    }
+
+    function setBaseURI(string memory _baseURI) external onlyOwner {
+        baseURI = _baseURI;
+    }
+
+
+    function uri(uint256 tokenId) public view virtual returns (string memory) {
+        require(_exists(tokenId), "ERC1155Metadata: URI query for nonexistent token");
+
+        string memory tokenURI = _tokenURIs[tokenId];
+        return bytes(tokenURI).length > 0 ? tokenURI : "";
+    }
+
+    function _setTokenURI(uint256 tokenId, string memory tokenURI) internal {
+        require(_exists(tokenId), "ERC1155Metadata: URI set of nonexistent token");
+        _tokenURIs[tokenId] = tokenURI;
+    }
+
+    function _exists(uint256 tokenId) internal view returns (bool) {
+        return bytes(_tokenURIs[tokenId]).length > 0;
     }
 }
