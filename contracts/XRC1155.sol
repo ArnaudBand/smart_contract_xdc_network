@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.18;
 
 import "./SafeMath.sol";
@@ -37,7 +38,7 @@ contract XRC1155 is IXRC1155, XRC165, CommonConstants
 
     function supportsInterface(bytes4 _interfaceId)
     public
-    view
+    pure
     returns (bool) {
          if (_interfaceId == INTERFACE_SIGNATURE_XRC165 ||
              _interfaceId == INTERFACE_SIGNATURE_XRC1155) {
@@ -137,7 +138,7 @@ contract XRC1155 is IXRC1155, XRC165, CommonConstants
         @param _id     ID of the Token
         @return        The _owner's balance of the Token type requested
      */
-    function balanceOf(address _owner, uint256 _id) external view returns (uint256) {
+    function balanceOf(address _owner, uint256 _id) external virtual view returns (uint256) {
         // The balance of any account can be calculated from the Transfer events history.
         // However, since we need to keep the balances to validate transfer request,
         // there is no extra cost to also privide a querry function.

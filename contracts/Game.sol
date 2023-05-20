@@ -10,13 +10,14 @@ contract Game is XRC1155 {
     uint256 public currentLevel;
     uint256 public totalLevels;
     uint256 public totalTokens;
+    uint256 public rewardAmount;
     string private baseURI;
 
     mapping(address => bool) public isRegistered;
     mapping(address => uint256) public levelRewards;
     mapping(uint256 => string) private _tokenURIs;
 
-    constructor(string memory _baseURI) XRC1155() {
+    constructor() XRC1155() {
         owner = msg.sender;
         currentLevel = 1;
         totalLevels = 5;
@@ -74,18 +75,18 @@ contract Game is XRC1155 {
         }
     }
 
-    function calculateReward(uint256 level) internal pure returns (uint256) {
+    function calculateReward(uint256 level) internal pure returns (uint256 reward) {
         // Define the reward logic based on the level
         if (level == 1) {
-            return 10; // Replace with the desired reward for level 1
+            return reward =10; // Replace with the desired reward for level 1
         } else if (level == 2) {
-            return 20; // Replace with the desired reward for level 2
+            return reward = 20; // Replace with the desired reward for level 2
         } else if (level == 3) {
-            return 30; // Replace with the desired reward for level 3
+            return reward = 30; // Replace with the desired reward for level 3
         } else if (level == 4) {
-            return 40; // Replace with the desired reward for level 4
+            return reward = 40; // Replace with the desired reward for level 4
         } else if (level == 5) {
-            return 50; // Replace with the desired reward for level 5
+            return reward = 50; // Replace with the desired reward for level 5
         }
     }
 
@@ -95,7 +96,7 @@ contract Game is XRC1155 {
         // Transfer the player's reward to their wallet
         // Replace this with the specific implementation for transferring the reward
         // using the player's registered wallet address
-        uint256 rewardAmount = levelRewards[msg.sender];
+        rewardAmount = levelRewards[msg.sender];
         levelRewards[msg.sender] = 0;
     }
 
