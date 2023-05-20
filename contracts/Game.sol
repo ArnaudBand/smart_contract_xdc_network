@@ -13,7 +13,7 @@ contract Game is XRC1155 {
     uint256 public rewardAmount;
     string private baseURI;
 
-    mapping(address => bool) public isRegistered;
+    mapping(address => uint256) public registeredPlayers;
     mapping(address => uint256) public levelRewards;
     mapping(uint256 => string) private _tokenURIs;
 
@@ -34,18 +34,15 @@ contract Game is XRC1155 {
 
     modifier onlyRegistered() {
         require(
-            isRegistered[msg.sender],
+            registeredPlayers[msg.sender] != 0,
             "You must be registered to play the game."
         );
         _;
     }
 
     function register(string memory playerName) external {
-        require(!isRegistered[msg.sender], "You are already registered.");
+        require(registeredPlayers[msg.sender] == 0, "You are already registered.");
         require(bytes(playerName).length > 0, "Player name cannot be empty.");
-
-        isRegistered[msg.sender] = true;
-        levelRewards[msg.sender] = 0;
 
         // Mint an NFT for the registered player
         uint256 tokenId = totalTokens + 1;
@@ -54,6 +51,14 @@ contract Game is XRC1155 {
 
         // Set the token URI
         _setTokenURI(tokenId, playerName);
+
+        // Register the player with the token ID
+        registeredPlayers[msg.sender] = tokenId;
+    }
+
+    function login() external view returns (bool) {
+        // Verify if the player has the same NFT token they received during registration
+        return balanceOf(msg.sender, registeredPlayers[msg.sender]) > 0;
     }
 
     function balanceOf(address account, uint256 tokenId) public override view returns (uint256) {
