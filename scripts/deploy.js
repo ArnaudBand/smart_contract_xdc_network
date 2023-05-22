@@ -5,23 +5,33 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require("hardhat");
+const path = require('path');
+const fs = require('fs');
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  
+  // Compile the contract
+  const compiledContract = await ethers.getContractFactory('Game');
+  const contract = await compiledContract.deploy();
 
-  const lockedAmount = hre.ethers.utils.parseEther("0.001");
+  // Wait for the contract to be deployed
+  await contract.deployed();
 
-  const Lock = await hre.ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  // Get the contract address and ABI
+  const contractAddress = contract.address;
+  const contractABI = contract.interface.format('json');
 
-  await lock.deployed();
+  // Save the contract address and ABI to a JSON file
+  // const contractData = {
+  //   address: contractAddress,
+  //   abi: contractABI,
+  // };
+  // const outputFilePath = path.join(__dirname, 'GameContract.json');
+  // fs.writeFileSync(outputFilePath, JSON.stringify(contractData, null, 2));
 
-  console.log(
-    `Lock with ${ethers.utils.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
-  );
+  console.log('Contract deployed successfully!');
+  console.log('Contract address:', contractAddress);
+  // console.log('Contract ABI saved to:', outputFilePath);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

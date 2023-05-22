@@ -4,7 +4,6 @@ pragma solidity ^0.8.18;
 import "./XRC1155.sol";
 
 contract Game is XRC1155 {
-    // using Strings for uint256;
 
     address public owner;
     uint256 public currentLevel;
