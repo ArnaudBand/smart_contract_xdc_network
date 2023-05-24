@@ -20,7 +20,7 @@ contract Game is XRC1155 {
         owner = msg.sender;
         currentLevel = 1;
         totalLevels = 5;
-        totalTokens = 0;
+        totalTokens = 0;   // link it with pinata
     }
 
     modifier onlyOwner() {
