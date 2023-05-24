@@ -1,0 +1,11 @@
+{
+  "name": "Membership token #1",
+  "description": "This nft is for the membership",
+  "image": "0.jpg",
+  "edition": 1,
+  "artist": "seshat",
+  "attributes": [
+    { "trait_type": "membership", "value": "yes" },
+    { "trait_type": "level", "value": "0" }
+  ]
+}
